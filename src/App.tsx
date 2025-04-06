@@ -21,8 +21,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className={`flex-1 ${isMobile ? 'ml-0' : 'ml-64'}`}>
-        {children}
+      <div className={`flex-1 transition-all duration-300 ${isMobile ? 'ml-0' : 'ml-64'}`}>
+        <main className="p-4 md:p-6 max-w-full overflow-x-hidden">
+          {children}
+        </main>
       </div>
     </div>
   );

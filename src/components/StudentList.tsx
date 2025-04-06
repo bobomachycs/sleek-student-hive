@@ -12,10 +12,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/EmptyState";
-import { Search, UserPlus, Users } from "lucide-react";
+import { Search, UserPlus, Users, ChevronRight } from "lucide-react";
 import { Student } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type StudentListProps = {
   students: Student[];
@@ -25,6 +27,7 @@ type StudentListProps = {
 export function StudentList({ students, className }: StudentListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Filter students based on search query
   const filteredStudents = students.filter((student) => {
@@ -80,6 +83,36 @@ export function StudentList({ students, className }: StudentListProps) {
     }
   };
 
+  // Mobile card view component
+  const StudentCard = ({ student }: { student: Student }) => (
+    <Card 
+      key={student.id} 
+      className="mb-3 cursor-pointer hover:bg-muted/50 transition-colors"
+      onClick={() => handleStudentClick(student.id)}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={student.profileImage} alt={`${student.firstName} ${student.lastName}`} />
+              <AvatarFallback>{getInitials(student.firstName, student.lastName)}</AvatarFallback>
+            </Avatar>
+            <div className="space-y-1">
+              <div className="font-medium">{student.firstName} {student.lastName}</div>
+              <div className="text-sm text-muted-foreground">{student.id}</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className={getGradeBadgeColor(student.grade)}>
+              {student.grade}
+            </Badge>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className={className}>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
@@ -98,54 +131,70 @@ export function StudentList({ students, className }: StudentListProps) {
         </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>ID</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Grade</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredStudents.length === 0 ? (
+      {isMobile ? (
+        // Mobile view - cards
+        <div className="space-y-2">
+          {filteredStudents.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              No students found matching your search.
+            </div>
+          ) : (
+            filteredStudents.map((student) => (
+              <StudentCard key={student.id} student={student} />
+            ))
+          )}
+        </div>
+      ) : (
+        // Desktop view - table
+        <div className="rounded-md border overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No students found.
-                </TableCell>
+                <TableHead>Student</TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Grade</TableHead>
               </TableRow>
-            ) : (
-              filteredStudents.map((student) => (
-                <TableRow
-                  key={student.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleStudentClick(student.id)}
-                >
-                  <TableCell className="font-medium">
-                    <div className="flex items-center">
-                      <Avatar className="h-8 w-8 mr-2">
-                        <AvatarImage src={student.profileImage} alt={`${student.firstName} ${student.lastName}`} />
-                        <AvatarFallback>{getInitials(student.firstName, student.lastName)}</AvatarFallback>
-                      </Avatar>
-                      {student.firstName} {student.lastName}
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.id}</TableCell>
-                  <TableCell>{student.email}</TableCell>
-                  <TableCell>{student.phone}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={getGradeBadgeColor(student.grade)}>
-                      {student.grade}
-                    </Badge>
+            </TableHeader>
+            <TableBody>
+              {filteredStudents.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    No students found.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : (
+                filteredStudents.map((student) => (
+                  <TableRow
+                    key={student.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleStudentClick(student.id)}
+                  >
+                    <TableCell className="font-medium">
+                      <div className="flex items-center">
+                        <Avatar className="h-8 w-8 mr-2">
+                          <AvatarImage src={student.profileImage} alt={`${student.firstName} ${student.lastName}`} />
+                          <AvatarFallback>{getInitials(student.firstName, student.lastName)}</AvatarFallback>
+                        </Avatar>
+                        {student.firstName} {student.lastName}
+                      </div>
+                    </TableCell>
+                    <TableCell>{student.id}</TableCell>
+                    <TableCell>{student.email}</TableCell>
+                    <TableCell>{student.phone}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={getGradeBadgeColor(student.grade)}>
+                        {student.grade}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }
