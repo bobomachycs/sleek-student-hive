@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,23 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Book, Calendar, Edit, GraduationCap, Mail, MapPin, Phone, User } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Book, Calendar, Check, Edit, GraduationCap, Mail, MapPin, Phone, User, X } from "lucide-react";
 import { Student, Course, getCourseById, getAttendancePercentage } from "@/lib/data";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type StudentDetailProps = {
   student: Student;
@@ -17,8 +31,13 @@ type StudentDetailProps = {
   className?: string;
 };
 
-export function StudentDetail({ student, courses, className }: StudentDetailProps) {
+export function StudentDetail({ student: initialStudent, courses, className }: StudentDetailProps) {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [student, setStudent] = useState<Student>(initialStudent);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedStudent, setEditedStudent] = useState<Student>(initialStudent);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -50,6 +69,47 @@ export function StudentDetail({ student, courses, className }: StudentDetailProp
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditedStudent((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleGradeChange = (value: string) => {
+    setEditedStudent((prev) => ({
+      ...prev,
+      grade: value,
+    }));
+  };
+
+  const handleSaveChanges = () => {
+    // In a real app, we would send changes to the server
+    setStudent(editedStudent);
+    setIsEditing(false);
+    
+    toast({
+      title: "Profile Updated",
+      description: "Student information has been updated successfully.",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    if (JSON.stringify(editedStudent) !== JSON.stringify(student)) {
+      setIsConfirmDialogOpen(true);
+    } else {
+      setIsEditing(false);
+      setEditedStudent(student);
+    }
+  };
+
+  const confirmCancel = () => {
+    setIsEditing(false);
+    setEditedStudent(student);
+    setIsConfirmDialogOpen(false);
+  };
+
   const attendancePercentage = getAttendancePercentage(student.id);
   const studentCourses = student.courses.map(courseId => getCourseById(courseId)).filter(Boolean) as Course[];
 
@@ -62,10 +122,23 @@ export function StudentDetail({ student, courses, className }: StudentDetailProp
           </Button>
           <h1 className="text-2xl font-bold">Student Profile</h1>
         </div>
-        <Button>
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Profile
-        </Button>
+        {isEditing ? (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleCancelEdit}>
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <Button onClick={handleSaveChanges}>
+              <Check className="mr-2 h-4 w-4" />
+              Save Changes
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={() => setIsEditing(true)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Profile
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -77,38 +150,120 @@ export function StudentDetail({ student, courses, className }: StudentDetailProp
                 <AvatarImage src={student.profileImage} alt={`${student.firstName} ${student.lastName}`} />
                 <AvatarFallback className="text-2xl">{getInitials(student.firstName, student.lastName)}</AvatarFallback>
               </Avatar>
-              <CardTitle className="text-2xl">
-                {student.firstName} {student.lastName}
-              </CardTitle>
-              <Badge variant="secondary" className={`mt-2 ${getGradeBadgeColor(student.grade)}`}>
-                Grade: {student.grade}
-              </Badge>
+              {isEditing ? (
+                <div className="space-y-2 w-full">
+                  <div className="flex gap-2">
+                    <div>
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        value={editedStudent.firstName}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        value={editedStudent.lastName}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="studentGrade">Grade</Label>
+                    <Select value={editedStudent.grade} onValueChange={handleGradeChange}>
+                      <SelectTrigger id="studentGrade">
+                        <SelectValue placeholder="Select grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A">A</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B">B</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="C+">C+</SelectItem>
+                        <SelectItem value="C">C</SelectItem>
+                        <SelectItem value="C-">C-</SelectItem>
+                        <SelectItem value="D">D</SelectItem>
+                        <SelectItem value="F">F</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <CardTitle className="text-2xl">
+                    {student.firstName} {student.lastName}
+                  </CardTitle>
+                  <Badge variant="secondary" className={`mt-2 ${getGradeBadgeColor(student.grade)}`}>
+                    Grade: {student.grade}
+                  </Badge>
+                </>
+              )}
               <p className="text-sm text-muted-foreground mt-1">Student ID: {student.id}</p>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <Separator />
-              <div className="flex items-center">
-                <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="text-sm">{student.email}</span>
-              </div>
-              <div className="flex items-center">
-                <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="text-sm">{student.phone}</span>
-              </div>
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="text-sm">{student.gender}</span>
-              </div>
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="text-sm">DOB: {formatDate(student.dateOfBirth)}</span>
-              </div>
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="text-sm">{student.address}</span>
-              </div>
+              {isEditing ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      value={editedStudent.email}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={editedStudent.phone}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      id="address"
+                      name="address"
+                      value={editedStudent.address}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm">{student.email}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm">{student.phone}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm">{student.gender}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm">DOB: {formatDate(student.dateOfBirth)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm">{student.address}</span>
+                  </div>
+                </>
+              )}
               <Separator />
               <div>
                 <h3 className="text-sm font-medium mb-2">Attendance</h3>
@@ -225,6 +380,22 @@ export function StudentDetail({ student, courses, className }: StudentDetailProp
           </Tabs>
         </Card>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Are you sure you want to discard them?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsConfirmDialogOpen(false)}>No, continue editing</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCancel}>Yes, discard changes</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
