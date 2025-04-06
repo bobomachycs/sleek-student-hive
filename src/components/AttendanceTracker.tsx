@@ -108,7 +108,7 @@ export function AttendanceTracker({ attendanceRecords, courses, className }: Att
                 <SelectValue placeholder="Select course" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Courses</SelectItem>
+                <SelectItem value="all-courses">All Courses</SelectItem>
                 {courses.map((course) => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.name} ({course.code})
