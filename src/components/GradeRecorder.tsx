@@ -128,158 +128,160 @@ export function GradeRecorder({ students, courses, className }: GradeRecorderPro
             </div>
           </CardHeader>
           <CardContent>
-            <TabsContent value="assignments" className="mt-0">
-              {selectedCourse ? (
+            <Tabs value={activeTab}>
+              <TabsContent value="assignments">
+                {selectedCourse ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        {studentsInCourse[0]?.grades[selectedCourse]?.assignments.map((assignment) => (
+                          <TableHead key={assignment.id}>{assignment.name}</TableHead>
+                        )) || <TableHead>No Assignments</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {studentsInCourse.map((student) => {
+                        const courseGrades = student.grades[selectedCourse];
+                        return (
+                          <TableRow key={student.id}>
+                            <TableCell className="font-medium">
+                              {student.firstName} {student.lastName}
+                            </TableCell>
+                            {courseGrades?.assignments.map((assignment) => (
+                              <TableCell key={assignment.id} className="text-center">
+                                <span className={getGradeColor(assignment.score)}>
+                                  {assignment.score}/{assignment.maxScore}
+                                </span>
+                              </TableCell>
+                            )) || <TableCell>No grades</TableCell>}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    Please select a specific course to view assignments.
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="tests">
+                {selectedCourse ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        {studentsInCourse[0]?.grades[selectedCourse]?.tests.map((test) => (
+                          <TableHead key={test.id}>{test.name}</TableHead>
+                        )) || <TableHead>No Tests</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {studentsInCourse.map((student) => {
+                        const courseGrades = student.grades[selectedCourse];
+                        return (
+                          <TableRow key={student.id}>
+                            <TableCell className="font-medium">
+                              {student.firstName} {student.lastName}
+                            </TableCell>
+                            {courseGrades?.tests.map((test) => (
+                              <TableCell key={test.id} className="text-center">
+                                <span className={getGradeColor(test.score)}>
+                                  {test.score}/{test.maxScore}
+                                </span>
+                              </TableCell>
+                            )) || <TableCell>No grades</TableCell>}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    Please select a specific course to view tests.
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="final">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Student</TableHead>
-                      {studentsInCourse[0]?.grades[selectedCourse]?.assignments.map((assignment) => (
-                        <TableHead key={assignment.id}>{assignment.name}</TableHead>
-                      )) || <TableHead>No Assignments</TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {studentsInCourse.map((student) => {
-                      const courseGrades = student.grades[selectedCourse];
-                      return (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">
-                            {student.firstName} {student.lastName}
-                          </TableCell>
-                          {courseGrades?.assignments.map((assignment) => (
-                            <TableCell key={assignment.id} className="text-center">
-                              <span className={getGradeColor(assignment.score)}>
-                                {assignment.score}/{assignment.maxScore}
-                              </span>
-                            </TableCell>
-                          )) || <TableCell>No grades</TableCell>}
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  Please select a specific course to view assignments.
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="tests" className="mt-0">
-              {selectedCourse ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Student</TableHead>
-                      {studentsInCourse[0]?.grades[selectedCourse]?.tests.map((test) => (
-                        <TableHead key={test.id}>{test.name}</TableHead>
-                      )) || <TableHead>No Tests</TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {studentsInCourse.map((student) => {
-                      const courseGrades = student.grades[selectedCourse];
-                      return (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">
-                            {student.firstName} {student.lastName}
-                          </TableCell>
-                          {courseGrades?.tests.map((test) => (
-                            <TableCell key={test.id} className="text-center">
-                              <span className={getGradeColor(test.score)}>
-                                {test.score}/{test.maxScore}
-                              </span>
-                            </TableCell>
-                          )) || <TableCell>No grades</TableCell>}
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  Please select a specific course to view tests.
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="final" className="mt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student</TableHead>
-                    {selectedCourse ? (
-                      <TableHead>Final Grade</TableHead>
-                    ) : (
-                      courses.map((course) => (
-                        <TableHead key={course.id}>{course.code}</TableHead>
-                      ))
-                    )}
-                    {!selectedCourse && <TableHead>Average</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {studentsInCourse.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell className="font-medium">
-                        {student.firstName} {student.lastName}
-                      </TableCell>
                       {selectedCourse ? (
-                        <TableCell>
-                          {student.grades[selectedCourse]?.finalGrade ? (
-                            <div className="flex items-center">
-                              <div className="w-20 mr-4">
-                                <Progress
-                                  value={student.grades[selectedCourse]?.finalGrade || 0}
-                                  className="h-2"
-                                />
+                        <TableHead>Final Grade</TableHead>
+                      ) : (
+                        courses.map((course) => (
+                          <TableHead key={course.id}>{course.code}</TableHead>
+                        ))
+                      )}
+                      {!selectedCourse && <TableHead>Average</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {studentsInCourse.map((student) => (
+                      <TableRow key={student.id}>
+                        <TableCell className="font-medium">
+                          {student.firstName} {student.lastName}
+                        </TableCell>
+                        {selectedCourse ? (
+                          <TableCell>
+                            {student.grades[selectedCourse]?.finalGrade ? (
+                              <div className="flex items-center">
+                                <div className="w-20 mr-4">
+                                  <Progress
+                                    value={student.grades[selectedCourse]?.finalGrade || 0}
+                                    className="h-2"
+                                  />
+                                </div>
+                                <Badge 
+                                  className={getGradeBadgeColor(
+                                    getLetterGrade(student.grades[selectedCourse]?.finalGrade || 0)
+                                  )}
+                                >
+                                  {student.grades[selectedCourse]?.finalGrade}% ({
+                                    getLetterGrade(student.grades[selectedCourse]?.finalGrade || 0)
+                                  })
+                                </Badge>
                               </div>
+                            ) : (
+                              <div className="text-muted-foreground">Not graded</div>
+                            )}
+                          </TableCell>
+                        ) : (
+                          <>
+                            {courses.map((course) => (
+                              <TableCell key={course.id}>
+                                {student.grades[course.id]?.finalGrade ? (
+                                  <span className={getGradeColor(student.grades[course.id]?.finalGrade || 0)}>
+                                    {student.grades[course.id]?.finalGrade}%
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                            ))}
+                            <TableCell>
                               <Badge 
                                 className={getGradeBadgeColor(
-                                  getLetterGrade(student.grades[selectedCourse]?.finalGrade || 0)
+                                  getLetterGrade(getAverageGrade(student.id))
                                 )}
                               >
-                                {student.grades[selectedCourse]?.finalGrade}% ({
-                                  getLetterGrade(student.grades[selectedCourse]?.finalGrade || 0)
+                                {getAverageGrade(student.id)}% ({
+                                  getLetterGrade(getAverageGrade(student.id))
                                 })
                               </Badge>
-                            </div>
-                          ) : (
-                            <div className="text-muted-foreground">Not graded</div>
-                          )}
-                        </TableCell>
-                      ) : (
-                        <>
-                          {courses.map((course) => (
-                            <TableCell key={course.id}>
-                              {student.grades[course.id]?.finalGrade ? (
-                                <span className={getGradeColor(student.grades[course.id]?.finalGrade || 0)}>
-                                  {student.grades[course.id]?.finalGrade}%
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
                             </TableCell>
-                          ))}
-                          <TableCell>
-                            <Badge 
-                              className={getGradeBadgeColor(
-                                getLetterGrade(getAverageGrade(student.id))
-                              )}
-                            >
-                              {getAverageGrade(student.id)}% ({
-                                getLetterGrade(getAverageGrade(student.id))
-                              })
-                            </Badge>
-                          </TableCell>
-                        </>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
+                          </>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       )}
