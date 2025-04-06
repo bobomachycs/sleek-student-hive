@@ -10,10 +10,18 @@ import {
   Menu,
   Users,
   X,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type SidebarProps = {
   className?: string;
@@ -55,6 +63,7 @@ const navItems: NavItem[] = [
 
 export function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const toggleSidebar = () => {
@@ -118,7 +127,10 @@ export function Sidebar({ className }: SidebarProps) {
         </nav>
         <div className="p-4">
           <Separator className="bg-sidebar-border mb-4" />
-          <div className="flex items-center">
+          <div 
+            className="flex items-center cursor-pointer hover:bg-sidebar-accent/50 p-2 rounded-md"
+            onClick={() => setIsAdminDialogOpen(true)}
+          >
             <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-medium">
               A
             </div>
@@ -140,6 +152,58 @@ export function Sidebar({ className }: SidebarProps) {
           <Menu className="h-5 w-5" />
         </Button>
       )}
+
+      <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Administrator Profile</DialogTitle>
+            <DialogDescription>
+              System administrator details and permissions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-4 py-4">
+            <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-white text-xl font-medium">
+              A
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">Admin User</h3>
+              <p className="text-sm text-muted-foreground">admin@studenthive.edu</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-1 flex items-center gap-2">
+                <Info className="h-4 w-4 text-muted-foreground" />
+                About
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                System administrator with full access to all features and settings of the StudentHive management system.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">Permissions</h4>
+              <ul className="text-sm space-y-1">
+                <li className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                  User Management
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                  Course Management
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                  Grade Administration
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                  System Configuration
+                </li>
+              </ul>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

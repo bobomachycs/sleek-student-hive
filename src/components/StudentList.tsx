@@ -41,6 +41,12 @@ export function StudentList({ students, className }: StudentListProps) {
     navigate(`/students/${studentId}`);
   };
 
+  const handleAddStudent = () => {
+    // Dispatch a custom event that the parent component can listen for
+    const event = new CustomEvent("addStudent", { bubbles: true });
+    document.dispatchEvent(event);
+  };
+
   if (students.length === 0) {
     return (
       <EmptyState
@@ -48,7 +54,7 @@ export function StudentList({ students, className }: StudentListProps) {
         description="There are no students in the system yet."
         icon={<Users className="h-8 w-8 text-muted-foreground" />}
         actionLabel="Add Student"
-        onAction={() => console.log("Add student clicked")}
+        onAction={handleAddStudent}
       />
     );
   }
@@ -86,7 +92,7 @@ export function StudentList({ students, className }: StudentListProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button className="w-full sm:w-auto">
+        <Button className="w-full sm:w-auto" onClick={handleAddStudent}>
           <UserPlus className="mr-2 h-4 w-4" />
           Add Student
         </Button>
